@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-This module provides a class-based context manager for managing database connections.
+This script demonstrates a class-based context manager for managing database
+connections.
 """
 
 import sqlite3

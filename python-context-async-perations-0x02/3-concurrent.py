@@ -38,10 +38,10 @@ async def fetch_concurrently():
     # Setup a temporary database for the example
     async with aiosqlite.connect(DB_NAME) as db:
         await db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)")
-        await db.execute("INSERT INTO users (name, age) VALUES ('Allen', 30)")
-        await db.execute("INSERT INTO users (name, age) VALUES ('Audrey', 45)")
-        await db.execute("INSERT INTO users (name, age) VALUES ('Victor', 25)")
-        await db.execute("INSERT INTO users (name, age) VALUES ('Faith', 50)")
+        await db.execute("INSERT INTO users (name, age) VALUES ('Alice', 30)")
+        await db.execute("INSERT INTO users (name, age) VALUES ('Bob', 45)")
+        await db.execute("INSERT INTO users (name, age) VALUES ('Charlie', 25)")
+        await db.execute("INSERT INTO users (name, age) VALUES ('David', 50)")
         await db.commit()
 
     # Define the list of tasks to run concurrently
