@@ -27,6 +27,24 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone_number', 'role']
 
 
+class UserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'email', 'first_name', 'last_name')
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        return user
+
+
 class MessageSerializer(serializers.ModelSerializer):
     """
     Serializer for the Message model.
@@ -42,7 +60,8 @@ class MessageSerializer(serializers.ModelSerializer):
         serialized output.
         """
         model = Message
-        fields = ['id', 'sender', 'message_body', 'sent_at']
+        fields = ['id', 'sender', 'message_body', 'sent_at', 'conversation']
+        extra_kwargs = {'conversation': {'write_only': True}}
 
 
 class ConversationSerializer(serializers.ModelSerializer):
