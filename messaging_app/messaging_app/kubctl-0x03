@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Start port-forwarding in the background
+echo "Starting port-forward to the service..."
+kubectl port-forward service/messaging-app-service 8000:8000 > /dev/null 2>&1 &
+PORT_FORWARD_PID=$!
+sleep 5 # Give it a moment to start
+
+# Function to continuously send requests
+function test_availability {
+    while true; do
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000)
+        if [ "$STATUS" -ne 200 ]; then
+            echo "Downtime detected! Received status: $STATUS"
+            # You can choose to exit or just log the error
+        fi
+        sleep 0.5 # Check every half a second
+    done
+}
+
+# Start testing in the background
+echo "Continuously sending requests to check for downtime..."
+test_availability & 
+TEST_PID=$!
+
+# Apply the updated deployment to trigger a rolling update
+echo "\nApplying the updated deployment to trigger a rolling update..."
+kubectl apply -f blue_deployment.yaml
+
+# Monitor the rollout status
+echo "\nMonitoring the rolling update progress..."
+kubectl rollout status deployment/messaging-app-blue
+
+# Stop the background processes
+kill $TEST_PID
+kill $PORT_FORWARD_PID
+echo "\nTesting and port-forwarding stopped."
+
+# Verify the rolling update is complete by checking the pods
+echo "\nVerifying the rolling update is complete..."
+kubectl get pods -l app=messaging-app,color=blue
+
+echo "\nRolling update complete."
