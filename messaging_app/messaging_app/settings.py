@@ -87,7 +87,17 @@ WSGI_APPLICATION = 'messaging_app.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': env.db(),
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('DB_NAME', default='messaging_app_db'),
+        'USER': env('DB_USER', default='messaging_user'),
+        'PASSWORD': env('DB_PASSWORD', default='messaging_password_2024'),
+        'HOST': env('DB_HOST', default='db'),
+        'PORT': env('DB_PORT', default='3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+    }
 }
 
 
