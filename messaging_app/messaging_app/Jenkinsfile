@@ -1,32 +1,33 @@
 pipeline {
     agent any
 
-    tools {
-        // Ensure a Python installation named 'python3' is configured in Jenkins -> Global Tool Configuration
-        python 'python3'
+    // The 'tools' block has been removed as the base Jenkins image includes Python 3.
+
+    parameters {
+        string(name: 'GITHUB_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for GitHub access.')
+        string(name: 'DOCKERHUB_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for Docker Hub access.')
+        string(name: 'DOCKERHUB_USERNAME', description: 'Your Docker Hub username.')
     }
 
     environment {
-        // The ID of the credentials stored in Jenkins for GitHub access.
-        // Replace 'your-github-credentials-id' with your actual credentials ID from Jenkins.
-        GITHUB_CREDENTIALS_ID = 'your-github-credentials-id'
+        IMAGE_NAME = "${params.DOCKERHUB_USERNAME}/messaging-app"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
         stage('Checkout from GitHub') {
             steps {
                 echo 'Checking out the code from GitHub...'
-                // Replace 'https://github.com/your-username/alx-backend-python.git' with your repository URL.
                 git branch: 'main',
-                    credentialsId: GITHUB_CREDENTIALS_ID,
-                    url: 'https://github.com/your-username/alx-backend-python.git'
+                    credentialsId: params.GITHUB_CREDENTIALS_ID,
+                    url: 'https://github.com/your-username/alx-backend-python.git' // Replace with your repo URL
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing project dependencies...'
-                // Installs dependencies from the requirements.txt file located in the messaging_app directory.
+                // We can call pip3 directly because it is in the container's PATH.
                 sh 'pip3 install -r messaging_app/requirements.txt'
             }
         }
@@ -34,21 +35,34 @@ pipeline {
         stage('Run Tests with Pytest') {
             steps {
                 echo 'Running tests and generating a report...'
-                // Runs pytest on the tests within the messaging_app directory and generates a JUnit XML report.
-                // This command assumes your tests are discoverable by pytest within the messaging_app directory.
                 sh '''
                     mkdir -p test-reports
                     pytest messaging_app/ --junitxml=test-reports/report.xml
                 '''
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ./messaging_app"
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo "Pushing Docker image to Docker Hub..."
+                withCredentials([usernamePassword(credentialsId: params.DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
     }
 
     post {
-        // The 'always' block runs regardless of the pipeline's success or failure.
         always {
             echo 'Archiving test reports...'
-            // Archives the generated test report so it can be displayed in the Jenkins UI.
             junit 'test-reports/report.xml'
         }
     }

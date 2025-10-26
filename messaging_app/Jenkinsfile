@@ -1,16 +1,11 @@
 pipeline {
     agent any
 
-    tools {
-        python 'python3'
-    }
+    // The 'tools' block has been removed as the base Jenkins image includes Python 3.
 
     parameters {
-        // Creates a dropdown in the Jenkins UI to select the GitHub credentials.
         string(name: 'GITHUB_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for GitHub access.')
-        // Creates a dropdown in the Jenkins UI to select the Docker Hub credentials.
         string(name: 'DOCKERHUB_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for Docker Hub access.')
-        // Input field for your Docker Hub username.
         string(name: 'DOCKERHUB_USERNAME', description: 'Your Docker Hub username.')
     }
 
@@ -25,13 +20,14 @@ pipeline {
                 echo 'Checking out the code from GitHub...'
                 git branch: 'main',
                     credentialsId: params.GITHUB_CREDENTIALS_ID,
-                    url: 'https://github.com/alenstein/alx-backend-python.git' // Replace with your repo URL
+                    url: 'https://github.com/your-username/alx-backend-python.git' // Replace with your repo URL
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing project dependencies...'
+                // We can call pip3 directly because it is in the container's PATH.
                 sh 'pip3 install -r messaging_app/requirements.txt'
             }
         }
