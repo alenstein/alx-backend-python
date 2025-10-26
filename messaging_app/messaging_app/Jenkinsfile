@@ -9,16 +9,17 @@ pipeline {
     environment {
         // The ID of the credentials stored in Jenkins for GitHub access.
         // Replace 'your-github-credentials-id' with your actual credentials ID from Jenkins.
-        GITHUB_CREDENTIALS_ID = '74d05de3-47c2-43b8-9761-ac71d4666f45'
+        GITHUB_CREDENTIALS_ID = 'your-github-credentials-id'
     }
 
     stages {
         stage('Checkout from GitHub') {
             steps {
                 echo 'Checking out the code from GitHub...'
+                // Replace 'https://github.com/your-username/alx-backend-python.git' with your repository URL.
                 git branch: 'main',
                     credentialsId: GITHUB_CREDENTIALS_ID,
-                    url: 'https://github.com/alenstein/alx-backend-python.git'
+                    url: 'https://github.com/your-username/alx-backend-python.git'
             }
         }
 
@@ -26,7 +27,7 @@ pipeline {
             steps {
                 echo 'Installing project dependencies...'
                 // Installs dependencies from the requirements.txt file located in the messaging_app directory.
-                sh 'pip install -r messaging_app/requirements.txt'
+                sh 'pip3 install -r messaging_app/requirements.txt'
             }
         }
 
