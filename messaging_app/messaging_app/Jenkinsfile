@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    tools {
+        // Ensure a Python installation named 'python3' is configured in Jenkins -> Global Tool Configuration
+        python 'python3'
+    }
+
+    environment {
+        // The ID of the credentials stored in Jenkins for GitHub access.
+        // Replace 'your-github-credentials-id' with your actual credentials ID from Jenkins.
+        GITHUB_CREDENTIALS_ID = '74d05de3-47c2-43b8-9761-ac71d4666f45'
+    }
+
+    stages {
+        stage('Checkout from GitHub') {
+            steps {
+                echo 'Checking out the code from GitHub...'
+                git branch: 'main',
+                    credentialsId: GITHUB_CREDENTIALS_ID,
+                    url: 'https://github.com/alenstein/alx-backend-python.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing project dependencies...'
+                // Installs dependencies from the requirements.txt file located in the messaging_app directory.
+                sh 'pip install -r messaging_app/requirements.txt'
+            }
+        }
+
+        stage('Run Tests with Pytest') {
+            steps {
+                echo 'Running tests and generating a report...'
+                // Runs pytest on the tests within the messaging_app directory and generates a JUnit XML report.
+                // This command assumes your tests are discoverable by pytest within the messaging_app directory.
+                sh '''
+                    mkdir -p test-reports
+                    pytest messaging_app/ --junitxml=test-reports/report.xml
+                '''
+            }
+        }
+    }
+
+    post {
+        // The 'always' block runs regardless of the pipeline's success or failure.
+        always {
+            echo 'Archiving test reports...'
+            // Archives the generated test report so it can be displayed in the Jenkins UI.
+            junit 'test-reports/report.xml'
+        }
+    }
+}
