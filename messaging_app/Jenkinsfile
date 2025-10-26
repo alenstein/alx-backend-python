@@ -4,7 +4,7 @@ pipeline {
     // The 'tools' block has been removed as the base Jenkins image includes Python 3.
 
     parameters {
-        string(name: 'GITHUB_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for GitHub access.')
+        string(name: 'GITH_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for GitHub access.')
         string(name: 'DOCKERHUB_CREDENTIALS_ID', description: 'The ID of the credentials stored in Jenkins for Docker Hub access.')
         string(name: 'DOCKERHUB_USERNAME', description: 'Your Docker Hub username.')
     }
@@ -19,7 +19,7 @@ pipeline {
             steps {
                 echo 'Checking out the code from GitHub...'
                 git branch: 'main',
-                    credentialsId: params.GITHUB_CREDENTIALS_ID,
+                    credentialsId: params.GITH_CREDENTIALS_ID,
                     url: 'https://github.com/your-username/alx-backend-python.git' // Replace with your repo URL
             }
         }
